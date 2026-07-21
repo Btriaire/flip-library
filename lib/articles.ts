@@ -1,27 +1,8 @@
 import { XMLParser } from "fast-xml-parser";
 import { ArticleItem } from "./types";
+import { stripHtml } from "./rssUtils";
 
 const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_" });
-
-const HTML_ENTITIES: Record<string, string> = {
-  "&nbsp;": " ",
-  "&amp;": "&",
-  "&quot;": '"',
-  "&#39;": "'",
-  "&apos;": "'",
-  "&rsquo;": "’",
-  "&lsquo;": "‘",
-  "&hellip;": "…",
-};
-
-function stripHtml(html: string): string {
-  const noTags = html.replace(/<[^>]*>/g, "");
-  return noTags
-    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)))
-    .replace(/&#x([0-9a-fA-F]+);/g, (_, code) => String.fromCharCode(parseInt(code, 16)))
-    .replace(/&nbsp;|&amp;|&quot;|&#39;|&apos;|&rsquo;|&lsquo;|&hellip;/g, (m) => HTML_ENTITIES[m])
-    .trim();
-}
 
 // Bing News wraps the real article link in a tracking redirect
 // (bing.com/news/apiclick.aspx?...&url=<encoded>&...) — the actual URL is
