@@ -30,18 +30,25 @@ export default function Home() {
   }, [active]);
 
   return (
-    <div className="flex flex-col flex-1 h-dvh bg-zinc-950 text-white overscroll-none">
-      <div
-        className="flex items-center justify-between px-4 shrink-0"
-        style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}
-      >
-        <span className="font-semibold text-lg tracking-tight">Flip Library</span>
-        <Link href="/settings" className="text-white/60 p-1" aria-label="Réglages">
-          <SettingsIcon />
-        </Link>
-      </div>
-      <EnvironmentTabs active={active} onChange={setActive} />
+    <div className="relative flex-1 h-dvh bg-zinc-950 text-white overscroll-none overflow-hidden">
       <CardDeck items={items} loading={loading} />
+
+      <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent pointer-events-none">
+        <div
+          className="flex items-center justify-between px-4 pointer-events-auto"
+          style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}
+        >
+          <span className="font-semibold text-lg tracking-tight [font-family:Georgia,serif]">
+            Flip Library
+          </span>
+          <Link href="/settings" className="text-white/80 p-1" aria-label="Réglages">
+            <SettingsIcon />
+          </Link>
+        </div>
+        <div className="pointer-events-auto">
+          <EnvironmentTabs active={active} onChange={setActive} />
+        </div>
+      </div>
     </div>
   );
 }

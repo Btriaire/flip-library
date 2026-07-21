@@ -1,8 +1,18 @@
 import { useEffect, useState } from "react";
 import { ArticleItem } from "@/lib/types";
-import { ArticleIcon } from "./Icons";
+import { ArticleIcon, HeartIcon, ShareIcon } from "./Icons";
 
-export default function ArticleCard({ item, active }: { item: ArticleItem; active: boolean }) {
+export default function ArticleCard({
+  item,
+  active,
+  saved,
+  onToggleSave,
+}: {
+  item: ArticleItem;
+  active: boolean;
+  saved: boolean;
+  onToggleSave: () => void;
+}) {
   const [image, setImage] = useState(item.image);
 
   useEffect(() => {
@@ -17,33 +27,63 @@ export default function ArticleCard({ item, active }: { item: ArticleItem; activ
     };
   }, [active, image, item.url]);
 
+  const share = () => {
+    if (navigator.share) navigator.share({ title: item.title, url: item.url }).catch(() => {});
+    else window.open(item.url, "_blank", "noopener,noreferrer");
+  };
+
   return (
-    <div className="flex flex-col h-full w-full bg-zinc-900 text-white overflow-hidden rounded-2xl">
-      <div className="relative h-1/2 w-full bg-zinc-800">
-        {image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={image} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <div className="h-full w-full flex items-center justify-center text-white/30">
-            <ArticleIcon />
-          </div>
-        )}
-        <span className="absolute top-3 left-3 text-xs bg-black/60 px-2 py-1 rounded-full">
-          {item.tag}
-        </span>
-      </div>
-      <div className="flex-1 flex flex-col p-5 gap-2 overflow-hidden">
-        <span className="text-xs text-white/50 uppercase tracking-wide">{item.source}</span>
-        <h2 className="text-xl font-semibold leading-snug line-clamp-3">{item.title}</h2>
-        <p className="text-sm text-white/70 line-clamp-3">{item.excerpt}</p>
-        <a
-          href={item.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-auto self-start px-4 py-2 rounded-full bg-white text-black text-sm font-medium"
-        >
-          Lire l'article
-        </a>
+    <div className="relative h-full w-full bg-zinc-900 text-white overflow-hidden">
+      {image ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center text-white/20 bg-zinc-800">
+          <ArticleIcon className="w-16 h-16" />
+        </div>
+      )}
+
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
+
+      <a
+        href={item.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="absolute inset-0"
+        aria-label={item.title}
+      />
+
+      <div
+        className="absolute bottom-0 left-0 right-0 p-5 pointer-events-none"
+        style={{ paddingBottom: "calc(3.75rem + env(safe-area-inset-bottom))" }}
+      >
+        <h2 className="text-2xl font-bold leading-tight [font-family:Georgia,serif] line-clamp-4">
+          {item.title}
+        </h2>
+        <p className="text-sm text-white/60 mt-2">{item.source}</p>
+
+        <div className="flex items-center gap-5 mt-4 pointer-events-auto">
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              onToggleSave();
+            }}
+            aria-label="Sauvegarder"
+            className={saved ? "text-red-400" : "text-white/80"}
+          >
+            <HeartIcon filled={saved} />
+          </button>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              share();
+            }}
+            aria-label="Partager"
+            className="text-white/80"
+          >
+            <ShareIcon />
+          </button>
+        </div>
       </div>
     </div>
   );

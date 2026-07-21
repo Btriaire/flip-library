@@ -82,3 +82,41 @@ export function PlusIcon({ className = "w-4 h-4" }: IconProps) {
     </svg>
   );
 }
+
+export function HeartIcon({ className = base, filled = false }: IconProps & { filled?: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="1.6"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 20.2s-7.2-4.4-9.8-9C.6 8 1.8 4.6 5 3.6c2-.6 4 .2 5 2 .1.2.4.2.5 0 1-1.8 3-2.6 5-2 3.2 1 4.4 4.4 2.8 7.6-2.6 4.6-9.8 9-9.8 9Z"
+      />
+    </svg>
+  );
+}
+
+export function ShareIcon({ className = base }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth="1.6">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 4v11M8 8l4-4 4 4M5 13v5.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V13"
+      />
+    </svg>
+  );
+}
+
+export function ChevronDownIcon({ className = "w-4 h-4" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+    </svg>
+  );
+}
