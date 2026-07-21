@@ -32,7 +32,7 @@ export default function SmartImage({ src, alt = "" }: { src: string; alt?: strin
         className="absolute inset-0 h-full w-full object-cover scale-125 blur-3xl opacity-40"
       />
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt={alt} className="relative max-h-full max-w-full object-contain" />
+      <img src={src} alt={alt} className="relative w-full h-auto max-h-full object-contain" />
     </div>
   );
 }
