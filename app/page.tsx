@@ -39,7 +39,7 @@ export default function Home() {
           style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}
         >
           <span className="font-semibold text-lg tracking-tight [font-family:Georgia,serif]">
-            Flip Library
+            Flip-PaLaMa
           </span>
           <Link href="/settings" className="text-white/80 p-1" aria-label="Réglages">
             <SettingsIcon />

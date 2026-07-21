@@ -1,5 +1,6 @@
 import { VideoItem } from "@/lib/types";
 import { VideoIcon, HeartIcon, ShareIcon } from "./Icons";
+import SmartImage from "./SmartImage";
 
 export default function VideoCard({
   item,
@@ -28,8 +29,7 @@ export default function VideoCard({
           allowFullScreen
         />
       ) : item.thumbnail ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={item.thumbnail} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70" />
+        <SmartImage src={item.thumbnail} />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center text-white/20">
           <VideoIcon className="w-16 h-16" />

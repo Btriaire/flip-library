@@ -13,12 +13,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Flip Library",
+  title: "Flip-PaLaMa",
   description: "Bibliothèque perso façon Flipboard — articles et vidéos par centre d'intérêt",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Flip Library",
+    title: "Flip-PaLaMa",
   },
   formatDetection: {
     telephone: false,

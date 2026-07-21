@@ -27,6 +27,7 @@ export async function loadFeed(config: EnvironmentConfig): Promise<FeedItem[]> {
   const results = await Promise.all(
     tags.flatMap((tag) => [
       fetchJson(`/api/articles/search?tag=${encodeURIComponent(tag)}`),
+      fetchJson(`/api/wikipedia/search?tag=${encodeURIComponent(tag)}`),
       fetchJson(`/api/video/youtube?tag=${encodeURIComponent(tag)}`),
       fetchJson(`/api/video/twitch?tag=${encodeURIComponent(tag)}`),
     ])

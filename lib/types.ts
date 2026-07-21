@@ -16,6 +16,11 @@ export type ArticleItem = {
   url: string;
   publishedAt: string | null;
   tag: string;
+  // Only set for sources with an explicit open API/feed for full content
+  // (currently: Wikipedia's REST API, CC BY-SA) — never scraped from a
+  // publisher's page. Absent for regular news items, which link out instead.
+  fullText?: string;
+  license?: string;
 };
 
 export type VideoItem = {

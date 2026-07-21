@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { ArticleItem } from "@/lib/types";
 import { ArticleIcon, HeartIcon, ShareIcon } from "./Icons";
+import SmartImage from "./SmartImage";
+import ArticleReader from "./ArticleReader";
 
 export default function ArticleCard({
   item,
@@ -14,6 +16,7 @@ export default function ArticleCard({
   onToggleSave: () => void;
 }) {
   const [image, setImage] = useState(item.image);
+  const [reading, setReading] = useState(false);
 
   useEffect(() => {
     if (image || !active) return;
@@ -35,8 +38,7 @@ export default function ArticleCard({
   return (
     <div className="relative h-full w-full bg-zinc-900 text-white overflow-hidden">
       {image ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <SmartImage src={image} />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center text-white/20 bg-zinc-800">
           <ArticleIcon className="w-16 h-16" />
@@ -45,13 +47,21 @@ export default function ArticleCard({
 
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
 
-      <a
-        href={item.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="absolute inset-0"
-        aria-label={item.title}
-      />
+      {item.fullText ? (
+        <button
+          onClick={() => setReading(true)}
+          className="absolute inset-0"
+          aria-label={item.title}
+        />
+      ) : (
+        <a
+          href={item.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute inset-0"
+          aria-label={item.title}
+        />
+      )}
 
       <div
         className="absolute bottom-0 left-0 right-0 p-5 pointer-events-none"
@@ -85,6 +95,8 @@ export default function ArticleCard({
           </button>
         </div>
       </div>
+
+      {reading && item.fullText && <ArticleReader item={item} onClose={() => setReading(false)} />}
     </div>
   );
 }

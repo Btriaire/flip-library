@@ -2,8 +2,8 @@ import { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Flip Library",
-    short_name: "Flip Library",
+    name: "Flip-PaLaMa",
+    short_name: "Flip-PaLaMa",
     description: "Bibliothèque perso façon Flipboard — articles et vidéos par centre d'intérêt",
     start_url: "/",
     display: "standalone",
