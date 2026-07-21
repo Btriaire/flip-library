@@ -17,31 +17,36 @@ const HTML_ENTITIES: Record<string, string> = {
 function stripHtml(html: string): string {
   const noTags = html.replace(/<[^>]*>/g, "");
   return noTags
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, code) => String.fromCharCode(parseInt(code, 16)))
     .replace(/&nbsp;|&amp;|&quot;|&#39;|&apos;|&rsquo;|&lsquo;|&hellip;/g, (m) => HTML_ENTITIES[m])
     .trim();
 }
 
-function extractImage(item: any): string | null {
-  const enclosure = item.enclosure;
-  if (enclosure?.["@_url"]) return enclosure["@_url"];
-  const mediaContent = item["media:content"];
-  if (mediaContent?.["@_url"]) return mediaContent["@_url"];
-  return null;
+// Bing News wraps the real article link in a tracking redirect
+// (bing.com/news/apiclick.aspx?...&url=<encoded>&...) — the actual URL is
+// just a query param, no need to follow the redirect to read it.
+function unwrapBingLink(link: string): string {
+  try {
+    const wrapped = new URL(link);
+    return wrapped.searchParams.get("url") || link;
+  } catch {
+    return link;
+  }
 }
 
-// Google News RSS: free, no API key, good keyword coverage in French/English.
-export async function searchArticles(tag: string, lang = "fr"): Promise<ArticleItem[]> {
+// Bing News RSS: free, no API key, and — unlike Google News RSS — gives a
+// direct thumbnail (News:Image) plus the real publisher link, so no article
+// page needs to be fetched just to find a photo. Its terms explicitly allow
+// personal, non-commercial RSS-aggregator use (see the feed's own
+// <copyright> notice), which matches this app.
+export async function searchArticles(tag: string, market = "fr-FR"): Promise<ArticleItem[]> {
   const url =
-    `https://news.google.com/rss/search?` +
-    new URLSearchParams({
-      q: tag,
-      hl: lang,
-      gl: lang === "fr" ? "FR" : "US",
-      ceid: lang === "fr" ? "FR:fr" : "US:en",
-    });
+    `https://www.bing.com/news/search?` +
+    new URLSearchParams({ q: tag, format: "RSS", setmkt: market });
 
   const res = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } });
-  if (!res.ok) throw new Error(`Google News RSS ${res.status}`);
+  if (!res.ok) throw new Error(`Bing News RSS ${res.status}`);
   const xml = await res.text();
   const data = parser.parse(xml);
   const items = data?.rss?.channel?.item;
@@ -49,15 +54,16 @@ export async function searchArticles(tag: string, lang = "fr"): Promise<ArticleI
 
   return list.slice(0, 20).map((item: any, i: number) => {
     const rawTitle: string = item.title || "";
-    const sourceName: string = item.source?.["#text"] || item.source || "Google News";
+    const sourceName: string = stripHtml(item["News:Source"] || "Bing News");
+    const link = unwrapBingLink(item.link || "");
     return {
-      id: `gnews-${tag}-${i}-${encodeURIComponent(item.link || rawTitle)}`,
+      id: `bing-${tag}-${i}-${encodeURIComponent(link || rawTitle)}`,
       kind: "article",
       title: stripHtml(rawTitle),
       excerpt: stripHtml(item.description || ""),
-      image: extractImage(item),
+      image: item["News:Image"] || null,
       source: sourceName,
-      url: item.link,
+      url: link,
       publishedAt: item.pubDate || null,
       tag,
     } satisfies ArticleItem;

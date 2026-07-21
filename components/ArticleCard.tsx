@@ -1,13 +1,28 @@
+import { useEffect, useState } from "react";
 import { ArticleItem } from "@/lib/types";
 import { ArticleIcon } from "./Icons";
 
-export default function ArticleCard({ item }: { item: ArticleItem }) {
+export default function ArticleCard({ item, active }: { item: ArticleItem; active: boolean }) {
+  const [image, setImage] = useState(item.image);
+
+  useEffect(() => {
+    if (image || !active) return;
+    let cancelled = false;
+    fetch(`/api/articles/image?url=${encodeURIComponent(item.url)}`)
+      .then((res) => res.json())
+      .then((data) => !cancelled && data.image && setImage(data.image))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [active, image, item.url]);
+
   return (
     <div className="flex flex-col h-full w-full bg-zinc-900 text-white overflow-hidden rounded-2xl">
       <div className="relative h-1/2 w-full bg-zinc-800">
-        {item.image ? (
+        {image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={item.image} alt="" className="h-full w-full object-cover" />
+          <img src={image} alt="" className="h-full w-full object-cover" />
         ) : (
           <div className="h-full w-full flex items-center justify-center text-white/30">
             <ArticleIcon />

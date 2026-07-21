@@ -68,7 +68,7 @@ export default function CardDeck({ items, loading }: { items: FeedItem[]; loadin
           transition={{ duration: 0.2 }}
         >
           {current.kind === "article" ? (
-            <ArticleCard item={current} />
+            <ArticleCard item={current} active />
           ) : (
             <VideoCard item={current} active />
           )}
