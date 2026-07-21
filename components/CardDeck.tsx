@@ -5,6 +5,7 @@ import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { FeedItem } from "@/lib/types";
 import ArticleCard from "./ArticleCard";
 import VideoCard from "./VideoCard";
+import { StarIcon } from "./Icons";
 import { toggleSaved, isSaved, markSeen } from "@/lib/store";
 
 const SWIPE_THRESHOLD = 80;
@@ -52,7 +53,7 @@ export default function CardDeck({ items, loading }: { items: FeedItem[]; loadin
   const current = items[index];
 
   return (
-    <div className="flex-1 relative overflow-hidden px-4 pb-4">
+    <div className="flex-1 relative overflow-hidden px-4 pb-4 overscroll-none touch-none">
       <AnimatePresence mode="wait">
         <motion.div
           key={current.id}
@@ -74,15 +75,18 @@ export default function CardDeck({ items, loading }: { items: FeedItem[]; loadin
 
           <button
             onClick={() => handleSave(current)}
-            className="absolute top-3 right-3 h-9 w-9 rounded-full bg-black/50 text-white flex items-center justify-center text-lg"
+            className="absolute top-3 right-3 h-9 w-9 rounded-full bg-black/50 text-white flex items-center justify-center"
             aria-label="Sauvegarder"
           >
-            {isSaved(current.id) ? "★" : "☆"}
+            <StarIcon filled={isSaved(current.id)} />
           </button>
         </motion.div>
       </AnimatePresence>
 
-      <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-1 pointer-events-none">
+      <div
+        className="absolute left-0 right-0 flex justify-center gap-1 pointer-events-none"
+        style={{ bottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
+      >
         {items.slice(0, 20).map((it, i) => (
           <span
             key={it.id}

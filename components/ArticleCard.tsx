@@ -1,4 +1,5 @@
 import { ArticleItem } from "@/lib/types";
+import { ArticleIcon } from "./Icons";
 
 export default function ArticleCard({ item }: { item: ArticleItem }) {
   return (
@@ -8,7 +9,9 @@ export default function ArticleCard({ item }: { item: ArticleItem }) {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={item.image} alt="" className="h-full w-full object-cover" />
         ) : (
-          <div className="h-full w-full flex items-center justify-center text-4xl">📰</div>
+          <div className="h-full w-full flex items-center justify-center text-white/30">
+            <ArticleIcon />
+          </div>
         )}
         <span className="absolute top-3 left-3 text-xs bg-black/60 px-2 py-1 rounded-full">
           {item.tag}

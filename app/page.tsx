@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import EnvironmentTabs from "@/components/EnvironmentTabs";
 import CardDeck from "@/components/CardDeck";
+import { SettingsIcon } from "@/components/Icons";
 import { EnvironmentKey, FeedItem } from "@/lib/types";
 import { getEnvironments } from "@/lib/store";
 import { loadFeed } from "@/lib/feed";
@@ -29,11 +30,14 @@ export default function Home() {
   }, [active]);
 
   return (
-    <div className="flex flex-col flex-1 h-dvh bg-zinc-950 text-white">
-      <div className="flex items-center justify-between px-4 pt-3">
+    <div className="flex flex-col flex-1 h-dvh bg-zinc-950 text-white overscroll-none">
+      <div
+        className="flex items-center justify-between px-4 shrink-0"
+        style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}
+      >
         <span className="font-semibold text-lg tracking-tight">Flip Library</span>
-        <Link href="/settings" className="text-white/60 text-xl" aria-label="Réglages">
-          ⚙
+        <Link href="/settings" className="text-white/60 p-1" aria-label="Réglages">
+          <SettingsIcon />
         </Link>
       </div>
       <EnvironmentTabs active={active} onChange={setActive} />

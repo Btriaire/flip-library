@@ -1,4 +1,5 @@
 import { VideoItem } from "@/lib/types";
+import { VideoIcon } from "./Icons";
 
 export default function VideoCard({ item, active }: { item: VideoItem; active: boolean }) {
   return (
@@ -14,7 +15,9 @@ export default function VideoCard({ item, active }: { item: VideoItem; active: b
         // eslint-disable-next-line @next/next/no-img-element
         <img src={item.thumbnail} alt="" className="h-full w-full object-cover opacity-70" />
       ) : (
-        <div className="h-full w-full flex items-center justify-center text-4xl">🎬</div>
+        <div className="h-full w-full flex items-center justify-center text-white/30">
+          <VideoIcon />
+        </div>
       )}
       <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 to-transparent">
         <span className="text-xs bg-white/20 px-2 py-1 rounded-full">
