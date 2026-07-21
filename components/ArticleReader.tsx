@@ -21,13 +21,21 @@ export default function ArticleReader({ item, onClose }: { item: ArticleItem; on
 
       <div className="px-5 max-w-xl mx-auto">
         <h1 className="text-2xl font-bold leading-tight [font-family:Georgia,serif] mt-2">{item.title}</h1>
+        {item.byline && <p className="text-sm text-white/50 mt-2">{item.byline}</p>}
         {item.image && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={item.image} alt="" className="w-full rounded-xl mt-4 object-cover max-h-64" />
         )}
-        <p className="mt-6 text-[17px] leading-relaxed text-white/90 whitespace-pre-line">
-          {item.fullText}
-        </p>
+        {item.fullTextIsHtml ? (
+          <div
+            className="reader-content mt-6 text-[17px] leading-relaxed text-white/90 [&_a]:underline [&_p]:mb-4"
+            dangerouslySetInnerHTML={{ __html: item.fullText || "" }}
+          />
+        ) : (
+          <p className="mt-6 text-[17px] leading-relaxed text-white/90 whitespace-pre-line">
+            {item.fullText}
+          </p>
+        )}
         <div className="mt-6 mb-4 text-sm text-white/50">
           {item.license && <p>Contenu {item.license} — {item.source}</p>}
           <a href={item.url} target="_blank" rel="noopener noreferrer" className="underline">

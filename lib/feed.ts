@@ -29,6 +29,7 @@ export async function loadFeed(config: EnvironmentConfig): Promise<FeedItem[]> {
       fetchJson(`/api/articles/search?tag=${encodeURIComponent(tag)}`),
       fetchJson(`/api/bfmtv/search?tag=${encodeURIComponent(tag)}`),
       fetchJson(`/api/wikipedia/search?tag=${encodeURIComponent(tag)}`),
+      fetchJson(`/api/theconversation/search?tag=${encodeURIComponent(tag)}`),
       fetchJson(`/api/video/youtube?tag=${encodeURIComponent(tag)}`),
       fetchJson(`/api/video/twitch?tag=${encodeURIComponent(tag)}`),
     ])
