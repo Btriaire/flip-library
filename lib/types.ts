@@ -16,14 +16,19 @@ export type ArticleItem = {
   url: string;
   publishedAt: string | null;
   tag: string;
-  // Only set for sources with an explicit open license/API for full content
-  // (Wikipedia REST API CC BY-SA; The Conversation France CC BY-ND) — never
-  // scraped from a publisher's page. Absent for regular news items, which
-  // link out instead.
+  // Set for sources with an explicit open license/API for full content
+  // (Wikipedia REST API CC BY-SA; The Conversation France CC BY-ND — never
+  // scraped from a publisher's page), OR for NEWPI (source: "NEWPI") — a
+  // transformative AI reformulation across several press sources, not a
+  // verbatim reproduction, always shipped with `sources` below and clearly
+  // labelled via `license`. Absent for regular news items, which link out
+  // instead.
   fullText?: string;
   fullTextIsHtml?: boolean;
   byline?: string;
   license?: string;
+  // NEWPI only: the press articles the reformulation was built from.
+  sources?: { title: string; url: string }[];
 };
 
 export type VideoItem = {

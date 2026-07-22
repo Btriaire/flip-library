@@ -2,23 +2,24 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import EnvironmentTabs from "@/components/EnvironmentTabs";
+import EnvironmentTabs, { TabKey } from "@/components/EnvironmentTabs";
 import CardDeck from "@/components/CardDeck";
 import { SettingsIcon } from "@/components/Icons";
-import { EnvironmentKey, FeedItem } from "@/lib/types";
+import { FeedItem } from "@/lib/types";
 import { getEnvironments } from "@/lib/store";
 import { loadFeed } from "@/lib/feed";
+import { loadNewpiFeed } from "@/lib/newpi";
 
 export default function Home() {
-  const [active, setActive] = useState<EnvironmentKey>("perso");
+  const [active, setActive] = useState<TabKey>("perso");
   const [items, setItems] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    const config = getEnvironments()[active];
-    loadFeed(config).then((feed) => {
+    const load = active === "presse" ? loadNewpiFeed() : loadFeed(getEnvironments()[active]);
+    load.then((feed) => {
       if (!cancelled) {
         setItems(feed);
         setLoading(false);

@@ -37,10 +37,26 @@ export default function ArticleReader({ item, onClose }: { item: ArticleItem; on
           </p>
         )}
         <div className="mt-6 mb-4 text-sm text-white/50">
-          {item.license && <p>Contenu {item.license} — {item.source}</p>}
-          <a href={item.url} target="_blank" rel="noopener noreferrer" className="underline">
-            Voir l&apos;article complet sur {item.source} ↗
-          </a>
+          {item.license && <p className="mb-2">Contenu {item.license} — {item.source}</p>}
+          {item.sources && item.sources.length > 0 ? (
+            <div className="flex flex-col gap-1.5">
+              {item.sources.map((s, i) => (
+                <a
+                  key={i}
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-2"
+                >
+                  [{i + 1}] {s.title}
+                </a>
+              ))}
+            </div>
+          ) : (
+            <a href={item.url} target="_blank" rel="noopener noreferrer" className="underline">
+              Voir l&apos;article complet sur {item.source} ↗
+            </a>
+          )}
         </div>
       </div>
     </div>
