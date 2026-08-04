@@ -1,0 +1,12 @@
+# Flip-Library sur le VPS. Lance :  docker compose up -d --build
+# Le reverse proxy (nginx) tape sur 127.0.0.1:${HOST_PORT:-3500}.
+services:
+  flip-library:
+    build: .
+    image: flip-library
+    container_name: flip-library
+    ports:
+      - "127.0.0.1:${HOST_PORT:-3500}:3000"
+    env_file:
+      - .env.local
+    restart: unless-stopped
