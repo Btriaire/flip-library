@@ -19,9 +19,32 @@ export default function VideoCard({
     else window.open(url, "_blank", "noopener,noreferrer");
   };
 
+  // X blocks iframing its status pages, so a tweet never uses the iframe path:
+  // its own mp4 plays natively, and a photo/text post shows the still image.
+  const isTweet = item.source === "twitter";
+  const label = item.source === "youtube" ? "YouTube" : item.source === "twitch" ? "Twitch" : "X";
+
   return (
     <div className="relative h-full w-full bg-black text-white overflow-hidden">
-      {active ? (
+      {isTweet ? (
+        item.mp4 ? (
+          <video
+            src={item.mp4}
+            poster={item.thumbnail ?? undefined}
+            className="absolute inset-0 h-full w-full object-cover"
+            autoPlay={active}
+            muted
+            loop
+            playsInline
+          />
+        ) : item.thumbnail ? (
+          <SmartImage src={item.thumbnail} />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-white/20">
+            <VideoIcon className="w-16 h-16" />
+          </div>
+        )
+      ) : active ? (
         <iframe
           src={item.embedUrl}
           className="absolute inset-0 h-full w-full"
@@ -42,9 +65,7 @@ export default function VideoCard({
         className="absolute bottom-0 left-0 right-0 p-5"
         style={{ paddingBottom: "calc(3.75rem + env(safe-area-inset-bottom))" }}
       >
-        <span className="text-xs bg-white/15 px-2 py-1 rounded-full">
-          {item.source === "youtube" ? "YouTube" : "Twitch"}
-        </span>
+        <span className="text-xs bg-white/15 px-2 py-1 rounded-full">{label}</span>
         <h2 className="text-xl font-bold leading-tight [font-family:Georgia,serif] mt-2 line-clamp-3">
           {item.title}
         </h2>

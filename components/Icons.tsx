@@ -1,6 +1,67 @@
+import { FeedIconName } from "@/lib/types";
+
 type IconProps = { className?: string };
 
 const base = "w-5 h-5";
+
+// One glyph per nav feed, drawn in the same 24px stroke grid as the rest.
+export function FeedIcon({ name, className = base }: IconProps & { name: FeedIconName }) {
+  const svg = (d: React.ReactNode) => (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {d}
+    </svg>
+  );
+
+  switch (name) {
+    case "news":
+      return svg(
+        <>
+          <path d="M4 5.5h11a1 1 0 0 1 1 1V19H5.5A1.5 1.5 0 0 1 4 17.5V5.5Z" />
+          <path d="M16 9h2.5A1.5 1.5 0 0 1 20 10.5v6A2.5 2.5 0 0 1 17.5 19H16" />
+          <path d="M7 9h5M7 12.5h5M7 16h3" />
+        </>
+      );
+    case "shorts":
+      return svg(
+        <>
+          <rect x="7" y="3" width="10" height="18" rx="3" />
+          <path fill="currentColor" stroke="none" d="M11 9.2l4 2.8-4 2.8V9.2Z" />
+        </>
+      );
+    case "globe":
+      return svg(
+        <>
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="M3.5 12h17" />
+          <path d="M12 3.5c2.2 2.3 3.4 5.3 3.4 8.5S14.2 18.2 12 20.5c-2.2-2.3-3.4-5.3-3.4-8.5S9.8 5.8 12 3.5Z" />
+        </>
+      );
+    case "chip":
+      return svg(
+        <>
+          <rect x="7" y="7" width="10" height="10" rx="2" />
+          <path d="M10 3.5V7M14 3.5V7M10 17v3.5M14 17v3.5M3.5 10H7M3.5 14H7M17 10h3.5M17 14h3.5" />
+        </>
+      );
+    case "palette":
+      return svg(
+        <>
+          <path d="M12 3.5a8.5 8.5 0 0 0 0 17c1.4 0 2.2-.9 2.2-2 0-.6-.2-1-.6-1.4-.3-.4-.5-.8-.5-1.3 0-1 .8-1.8 1.9-1.8h1.3c2 0 3.7-1.6 3.7-3.6C20 6.6 16.4 3.5 12 3.5Z" />
+          <circle cx="8" cy="10.5" r="1.1" fill="currentColor" stroke="none" />
+          <circle cx="11.5" cy="7.5" r="1.1" fill="currentColor" stroke="none" />
+          <circle cx="15.5" cy="8.8" r="1.1" fill="currentColor" stroke="none" />
+        </>
+      );
+  }
+}
 
 export function SettingsIcon({ className = base }: IconProps) {
   return (

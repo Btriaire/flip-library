@@ -9,9 +9,9 @@ import { BackIcon, CloseIcon, SparkleIcon, PlusIcon } from "@/components/Icons";
 export default function Settings() {
   const [state, setState] = useState<EnvironmentsState | null>(null);
   const [inputs, setInputs] = useState<Record<EnvironmentKey, string>>({
-    perso: "",
-    pro: "",
-    other: "",
+    monde: "",
+    tech: "",
+    culture: "",
   });
   const [suggesting, setSuggesting] = useState<EnvironmentKey | null>(null);
 

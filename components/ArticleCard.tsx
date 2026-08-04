@@ -15,6 +15,9 @@ export default function ArticleCard({
   saved: boolean;
   onToggleSave: () => void;
 }) {
+  // Full-text sources (The Conversation, NEWPI) can be read in-app.
+  const hasFullText = !!item.fullText;
+
   const [image, setImage] = useState(item.image);
   const [reading, setReading] = useState(false);
 
@@ -29,6 +32,15 @@ export default function ArticleCard({
       cancelled = true;
     };
   }, [active, image, item.url]);
+
+  // Longest text we can legitimately show, in order of preference.
+  const summary = item.fullText
+    ? item.fullText.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 900)
+    : item.excerpt;
+
+  // Feeds range from a bare headline to a full body, so the badge says which
+  // one this card actually got rather than promising the same everywhere.
+  const depth = hasFullText ? "full" : summary.length >= 400 ? "long" : "short";
 
   const share = () => {
     if (navigator.share) navigator.share({ title: item.title, url: item.url }).catch(() => {});
@@ -45,7 +57,7 @@ export default function ArticleCard({
         </div>
       )}
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
 
       {item.fullText ? (
         <button
@@ -64,13 +76,41 @@ export default function ArticleCard({
       )}
 
       <div
-        className="absolute bottom-0 left-0 right-0 p-5 pointer-events-none"
+        className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black pointer-events-none"
+        style={{ bottom: "0" }}
+      />
+
+      <div
+        className="absolute bottom-0 left-0 right-0 p-6 pointer-events-none space-y-3 max-h-2/3"
         style={{ paddingBottom: "calc(3.75rem + env(safe-area-inset-bottom))" }}
       >
-        <h2 className="text-2xl font-bold leading-tight [font-family:Georgia,serif] line-clamp-4">
+        <div className="flex items-center gap-2">
+          {depth === "full" ? (
+            <span className="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-medium">
+              ✓ Article complet
+            </span>
+          ) : depth === "long" ? (
+            <span className="text-xs bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-full font-medium">
+              ✦ Extrait long
+            </span>
+          ) : (
+            <span className="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-medium">
+              ↗ Extrait court — lien externe
+            </span>
+          )}
+        </div>
+        <h2 className="text-2xl font-bold leading-tight [font-family:Georgia,serif] line-clamp-2">
           {item.title}
         </h2>
-        <p className="text-sm text-white/60 mt-2">{item.source}</p>
+        {/* The overlay can't scroll (it must stay transparent to the swipe),
+            so the teaser is clamped to what fits rather than cut mid-line. */}
+        <p className="text-lg text-white/80 leading-relaxed font-light line-clamp-[10]">
+          {summary}
+        </p>
+        <div className="flex items-center justify-between text-xs text-white/50 pt-3 border-t border-white/10">
+          <span className="font-medium">{item.source}</span>
+          {item.byline && <span>{item.byline}</span>}
+        </div>
 
         <div className="flex items-center gap-5 mt-4 pointer-events-auto">
           <button

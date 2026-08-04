@@ -1,4 +1,4 @@
-import { FeedItem, EnvironmentConfig } from "./types";
+import { FeedItem } from "./types";
 
 function shuffle<T>(arr: T[]): T[] {
   const copy = [...arr];
@@ -19,19 +19,12 @@ async function fetchJson(url: string): Promise<{ items: any[] }> {
   }
 }
 
-// Pulls articles + video for every tag in the environment and interleaves
-// them into one shuffled feed — mixing reading and watching in the same deck.
-export async function loadFeed(config: EnvironmentConfig): Promise<FeedItem[]> {
-  const tags = config.tags.length ? config.tags : ["actualités"];
+// Load YouTube Shorts, Twitch, and X/Twitter for dedicated short content feed
+export async function loadShorts(): Promise<FeedItem[]> {
+  const tags = ["musique", "voyage", "cinéma", "humour", "sport", "tech"];
 
   const results = await Promise.all(
     tags.flatMap((tag) => [
-      // Nine French outlets behind one route — see lib/newsSources.ts.
-      fetchJson(`/api/news/search?tag=${encodeURIComponent(tag)}`),
-      fetchJson(`/api/bfmtv/search?tag=${encodeURIComponent(tag)}`),
-      fetchJson(`/api/basta/search?tag=${encodeURIComponent(tag)}`),
-      fetchJson(`/api/theconversation/search?tag=${encodeURIComponent(tag)}`),
-      fetchJson(`/api/articles/search?tag=${encodeURIComponent(tag)}`),
       fetchJson(`/api/video/youtube?tag=${encodeURIComponent(tag)}`),
       fetchJson(`/api/video/twitch?tag=${encodeURIComponent(tag)}`),
       fetchJson(`/api/twitter/search?tag=${encodeURIComponent(tag)}`),

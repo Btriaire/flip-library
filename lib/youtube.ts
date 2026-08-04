@@ -1,5 +1,18 @@
 import { VideoItem } from "./types";
 
+// YouTube returns titles HTML-escaped ("Aya Nakamura &amp; …"), and this runs
+// server-side where there's no DOM to decode with.
+function decodeEntities(text: string): string {
+  return text
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;|&#x27;/gi, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&");
+}
+
 // YouTube Data API v3 — needs YOUTUBE_API_KEY (free quota, no billing required
 // for search.list at normal personal-use volume).
 export async function searchYouTubeShorts(tag: string): Promise<VideoItem[]> {
@@ -17,7 +30,10 @@ export async function searchYouTubeShorts(tag: string): Promise<VideoItem[]> {
       key: apiKey,
     });
 
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" },
+    signal: AbortSignal.timeout(8000),
+  });
   if (!res.ok) throw new Error(`YouTube ${res.status}`);
   const data = await res.json();
 
@@ -26,11 +42,11 @@ export async function searchYouTubeShorts(tag: string): Promise<VideoItem[]> {
     return {
       id: `yt-${videoId}`,
       kind: "video",
-      title: item.snippet.title,
+      title: decodeEntities(item.snippet.title),
       thumbnail: item.snippet.thumbnails?.medium?.url || null,
       source: "youtube",
       embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`,
-      channel: item.snippet.channelTitle,
+      channel: decodeEntities(item.snippet.channelTitle),
       tag,
     } satisfies VideoItem;
   });

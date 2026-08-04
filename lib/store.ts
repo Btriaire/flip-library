@@ -1,6 +1,12 @@
 "use client";
 
-import { DEFAULT_ENVIRONMENTS, EnvironmentKey, EnvironmentsState, FeedItem } from "./types";
+import {
+  DEFAULT_ENVIRONMENTS,
+  ENVIRONMENTS,
+  EnvironmentKey,
+  EnvironmentsState,
+  FeedItem,
+} from "./types";
 
 // Persistence layer. Firestore isn't wired in yet — it needs a Firebase
 // project config from Bruno (see lib/firebase.ts). localStorage keeps the
@@ -27,7 +33,19 @@ function write<T>(key: string, value: T) {
 }
 
 export function getEnvironments(): EnvironmentsState {
-  return read(ENV_KEY, DEFAULT_ENVIRONMENTS);
+  const stored = read<Partial<Record<string, unknown>>>(ENV_KEY, {});
+
+  // Earlier builds stored perso/pro/other. Layering whatever is still valid
+  // over the defaults means a renamed or dropped universe falls back instead
+  // of leaving `state[env]` undefined at every call site.
+  const known: Partial<EnvironmentsState> = {};
+  for (const { key } of ENVIRONMENTS) {
+    const entry = stored[key] as EnvironmentsState[EnvironmentKey] | undefined;
+    if (entry && Array.isArray(entry.tags)) {
+      known[key] = { tags: entry.tags, aiSuggestedTags: entry.aiSuggestedTags ?? [] };
+    }
+  }
+  return { ...DEFAULT_ENVIRONMENTS, ...known };
 }
 
 export function saveEnvironments(state: EnvironmentsState) {

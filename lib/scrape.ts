@@ -24,3 +24,4 @@ export async function getArticleImage(url: string): Promise<string | null> {
     return null;
   }
 }
+
