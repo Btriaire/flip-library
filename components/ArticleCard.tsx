@@ -18,8 +18,15 @@ export default function ArticleCard({
   // Full-text sources (The Conversation, NEWPI) can be read in-app.
   const hasFullText = !!item.fullText;
 
+  // Below this, an RSS excerpt reads as "basically just the headline" —
+  // worth asking Jarvis for a proper digest instead.
+  const ENRICH_THRESHOLD = 400;
+  const needsEnrichment = !hasFullText && item.excerpt.length < ENRICH_THRESHOLD;
+
   const [image, setImage] = useState(item.image);
   const [reading, setReading] = useState(false);
+  // null = not fetched (or unavailable); a string is the AI digest.
+  const [digest, setDigest] = useState<string | null>(null);
 
   useEffect(() => {
     if (image || !active) return;
@@ -33,14 +40,30 @@ export default function ArticleCard({
     };
   }, [active, image, item.url]);
 
+  useEffect(() => {
+    // Runs only for the card actually on screen, never the whole feed —
+    // Jarvis is a shared 1-core box on the VPS (30-60s per digest). Fires
+    // once the card becomes active; the excerpt stays visible the whole
+    // time, so a slow or failed digest never looks like something broke.
+    if (!active || !needsEnrichment || digest !== null) return;
+    let cancelled = false;
+    fetch(`/api/articles/read?url=${encodeURIComponent(item.url)}&source=${encodeURIComponent(item.source)}`)
+      .then((res) => res.json())
+      .then((data) => !cancelled && data.digest && setDigest(data.digest))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [active, needsEnrichment, digest, item.url, item.source]);
+
   // Longest text we can legitimately show, in order of preference.
   const summary = item.fullText
     ? item.fullText.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 900)
-    : item.excerpt;
+    : digest || item.excerpt;
 
   // Feeds range from a bare headline to a full body, so the badge says which
   // one this card actually got rather than promising the same everywhere.
-  const depth = hasFullText ? "full" : summary.length >= 400 ? "long" : "short";
+  const depth = hasFullText ? "full" : digest ? "digest" : summary.length >= 400 ? "long" : "short";
 
   const share = () => {
     if (navigator.share) navigator.share({ title: item.title, url: item.url }).catch(() => {});
@@ -88,6 +111,10 @@ export default function ArticleCard({
           {depth === "full" ? (
             <span className="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-medium">
               ✓ Article complet
+            </span>
+          ) : depth === "digest" ? (
+            <span className="text-xs bg-violet-500/20 text-violet-300 px-2 py-0.5 rounded-full font-medium">
+              ✦ Résumé IA fidèle à l&apos;article
             </span>
           ) : depth === "long" ? (
             <span className="text-xs bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-full font-medium">

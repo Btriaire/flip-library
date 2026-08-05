@@ -2,12 +2,12 @@
 // Ollama, port 9999). Same contract every project uses: POST /api/ask.
 const JARVIS_API = process.env.JARVIS_API_URL || "http://46.202.131.240:9999";
 
-async function askJarvis(question: string): Promise<string> {
+async function askJarvis(question: string, timeoutMs = 15000): Promise<string> {
   const res = await fetch(`${JARVIS_API}/api/ask`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ question, project: "flip-library" }),
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(timeoutMs),
   });
   if (!res.ok) throw new Error(`Jarvis ${res.status}`);
   const data = await res.json();
@@ -26,6 +26,22 @@ export async function suggestTags(environment: string, existingTags: string[]): 
     .map((t) => t.trim().replace(/^[-•\d.]+\s*/, ""))
     .filter(Boolean)
     .slice(0, 5);
+}
+
+// Turns a scraped article body into an original French digest — same
+// transformative treatment NEWPI already applies across sources. The source
+// text is never returned to the client, only this reformulation is. Qwen2.5:3b
+// on the VPS's shared 1-core box takes 30-60s for this, so callers must treat
+// it as a background enrichment, never something the UI blocks on.
+export async function digestArticle(text: string, source: string): Promise<string> {
+  const prompt =
+    `Voici le texte d'un article de presse publié par ${source} :\n\n${text}\n\n` +
+    `Rédige un résumé fidèle en français, 4 à 6 phrases, qui reprend les faits et les chiffres ` +
+    `présents dans le texte ci-dessus — n'invente aucun fait qui n'y figure pas. ` +
+    `Réponds uniquement avec le résumé, sans titre ni introduction.`;
+
+  const answer = await askJarvis(prompt, 90000);
+  return answer.trim();
 }
 
 export async function classifyContent(title: string, environments: string[]): Promise<string> {
