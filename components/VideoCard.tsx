@@ -45,12 +45,25 @@ export default function VideoCard({
           </div>
         )
       ) : active ? (
-        <iframe
-          src={item.embedUrl}
-          className="absolute inset-0 h-full w-full"
-          allow="autoplay; encrypted-media; picture-in-picture"
-          allowFullScreen
-        />
+        <>
+          {/* Behind the iframe, not a replacement for it: if the embedded
+              player fails to initialize (e.g. Safari ITP blocking YouTube's
+              third-party cookies) the iframe renders as a transparent blank
+              instead of erroring, and without this the card would show pure
+              black with only the caption overlay — exactly the "static
+              title" bug this backstops. */}
+          {item.thumbnail && (
+            <div className="absolute inset-0">
+              <SmartImage src={item.thumbnail} />
+            </div>
+          )}
+          <iframe
+            src={item.embedUrl}
+            className="absolute inset-0 h-full w-full"
+            allow="autoplay; encrypted-media; picture-in-picture"
+            allowFullScreen
+          />
+        </>
       ) : item.thumbnail ? (
         <SmartImage src={item.thumbnail} />
       ) : (

@@ -48,7 +48,14 @@ export async function searchYouTubeShorts(tag: string): Promise<VideoItem[]> {
       // playsinline=1 is required for iOS Safari: without it, the embed tries
       // to go fullscreen to autoplay, iOS blocks fullscreen without a direct
       // user gesture, and the video just never starts — silently.
-      embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1`,
+      //
+      // youtube-nocookie.com (not youtube.com) because Safari's Intelligent
+      // Tracking Prevention blocks youtube.com's third-party cookies by
+      // default, which stops the embedded player from initializing at all —
+      // the iframe loads but stays blank, only the caption overlay shows.
+      // The nocookie domain doesn't set those cookies, so ITP has nothing to
+      // block.
+      embedUrl: `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1`,
       channel: decodeEntities(item.snippet.channelTitle),
       tag,
     } satisfies VideoItem;
