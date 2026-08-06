@@ -45,7 +45,10 @@ export async function searchYouTubeShorts(tag: string): Promise<VideoItem[]> {
       title: decodeEntities(item.snippet.title),
       thumbnail: item.snippet.thumbnails?.medium?.url || null,
       source: "youtube",
-      embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`,
+      // playsinline=1 is required for iOS Safari: without it, the embed tries
+      // to go fullscreen to autoplay, iOS blocks fullscreen without a direct
+      // user gesture, and the video just never starts — silently.
+      embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1`,
       channel: decodeEntities(item.snippet.channelTitle),
       tag,
     } satisfies VideoItem;
