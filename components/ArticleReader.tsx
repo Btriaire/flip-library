@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { ArticleItem } from "@/lib/types";
 import { CloseIcon } from "./Icons";
 
@@ -13,9 +14,12 @@ export default function ArticleReader({ item, onClose }: { item: ArticleItem; on
       }}
     >
       <div className="flex items-center justify-between px-4 mb-2">
-        <button onClick={onClose} className="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center">
+        {/* onTap, not onClick: still a DOM descendant of CardDeck's drag="y"
+            motion.div (position:fixed only changes layout, not DOM ancestry),
+            so the same iOS click-suppression bug applies — see VideoCard. */}
+        <motion.button onTap={onClose} className="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center">
           <CloseIcon className="w-4 h-4" />
-        </button>
+        </motion.button>
         <span className="text-xs text-white/50 uppercase tracking-wide">{item.source}</span>
       </div>
 

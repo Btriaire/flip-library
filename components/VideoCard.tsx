@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { VideoItem } from "@/lib/types";
 import { VideoIcon, HeartIcon, ShareIcon } from "./Icons";
 import SmartImage from "./SmartImage";
@@ -70,8 +71,16 @@ export default function VideoCard({
       )}
 
       {(!playing || !canPlay) && (
-        <button
-          onClick={() => setPlaying(true)}
+        // motion.button + onTap, not onClick: this card sits inside CardDeck's
+        // drag="y" motion.div, and iOS Safari drops the synthetic click event
+        // on descendants of an element whose touch handlers call
+        // preventDefault() (required for the swipe gesture) — a real tap did
+        // nothing on a real iPhone even though everything worked in testing
+        // (which used a programmatic .click(), bypassing the exact thing that
+        // was broken). onTap is Framer Motion's own pointer-driven tap
+        // detection, built to coexist with a drag gesture on an ancestor.
+        <motion.button
+          onTap={() => setPlaying(true)}
           aria-label="Lire la vidéo"
           className="absolute inset-0 flex items-center justify-center"
         >
@@ -80,7 +89,7 @@ export default function VideoCard({
               <path d="M8 5v14l11-7L8 5Z" />
             </svg>
           </span>
-        </button>
+        </motion.button>
       )}
 
       <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black via-black/50 to-transparent pointer-events-none" />
@@ -96,16 +105,16 @@ export default function VideoCard({
         <p className="text-sm text-white/60 mt-1">{item.channel}</p>
 
         <div className="flex items-center gap-5 mt-4">
-          <button
-            onClick={onToggleSave}
+          <motion.button
+            onTap={onToggleSave}
             aria-label="Sauvegarder"
             className={saved ? "text-red-400" : "text-white/80"}
           >
             <HeartIcon filled={saved} />
-          </button>
-          <button onClick={share} aria-label="Partager" className="text-white/80">
+          </motion.button>
+          <motion.button onTap={share} aria-label="Partager" className="text-white/80">
             <ShareIcon />
-          </button>
+          </motion.button>
         </div>
       </div>
     </div>

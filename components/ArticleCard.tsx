@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { ArticleItem } from "@/lib/types";
 import { ArticleIcon, HeartIcon, ShareIcon } from "./Icons";
 import SmartImage from "./SmartImage";
@@ -82,21 +83,19 @@ export default function ArticleCard({
 
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
 
-      {item.fullText ? (
-        <button
-          onClick={() => setReading(true)}
-          className="absolute inset-0"
-          aria-label={item.title}
-        />
-      ) : (
-        <a
-          href={item.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="absolute inset-0"
-          aria-label={item.title}
-        />
-      )}
+      {/* motion.button + onTap, not a plain <button>/<a onClick>: this card
+          sits inside CardDeck's drag="y" motion.div, and iOS Safari drops the
+          synthetic click event (and the native navigation an <a> depends on
+          for the very same event) on descendants of an element whose touch
+          handlers call preventDefault() — required for the swipe gesture. A
+          real tap did nothing on a real iPhone. onTap is Framer Motion's own
+          pointer-driven tap detection, built to coexist with a drag gesture
+          on an ancestor, so it fires reliably where the native click doesn't. */}
+      <motion.button
+        onTap={() => (item.fullText ? setReading(true) : window.open(item.url, "_blank", "noopener,noreferrer"))}
+        className="absolute inset-0"
+        aria-label={item.title}
+      />
 
       <div
         className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black pointer-events-none"
@@ -140,26 +139,26 @@ export default function ArticleCard({
         </div>
 
         <div className="flex items-center gap-5 mt-4 pointer-events-auto">
-          <button
-            onClick={(e) => {
-              e.preventDefault();
+          <motion.button
+            onTap={(e) => {
+              e.stopPropagation();
               onToggleSave();
             }}
             aria-label="Sauvegarder"
             className={saved ? "text-red-400" : "text-white/80"}
           >
             <HeartIcon filled={saved} />
-          </button>
-          <button
-            onClick={(e) => {
-              e.preventDefault();
+          </motion.button>
+          <motion.button
+            onTap={(e) => {
+              e.stopPropagation();
               share();
             }}
             aria-label="Partager"
             className="text-white/80"
           >
             <ShareIcon />
-          </button>
+          </motion.button>
         </div>
       </div>
 
