@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { FEEDS, FeedKey } from "@/lib/types";
-import { FeedIcon, SettingsIcon } from "./Icons";
+import { CameraIcon, FeedIcon, SettingsIcon } from "./Icons";
 
 // Top access bar, Apple News style: large masthead + a horizontally
 // scrollable row of icon pills that sits over the card deck.
@@ -33,13 +33,22 @@ export default function FeedNav({
         <h1 className="text-[26px] font-bold leading-none tracking-tight [font-family:Georgia,serif]">
           Flip-PaLaMa
         </h1>
-        <Link
-          href="/settings"
-          aria-label="Réglages"
-          className="rounded-full bg-white/10 p-2 text-white/80 active:bg-white/20"
-        >
-          <SettingsIcon />
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/camera"
+            aria-label="Appareil photo"
+            className="rounded-full bg-white/10 p-2 text-white/80 active:bg-white/20"
+          >
+            <CameraIcon />
+          </Link>
+          <Link
+            href="/settings"
+            aria-label="Réglages"
+            className="rounded-full bg-white/10 p-2 text-white/80 active:bg-white/20"
+          >
+            <SettingsIcon />
+          </Link>
+        </div>
       </div>
 
       <nav
