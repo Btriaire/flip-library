@@ -47,6 +47,7 @@ export default function Editor({
   const [comparing, setComparing] = useState(false);
   const [busy, setBusy] = useState<"save" | "download" | null>(null);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const editedCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const originalCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -128,6 +129,7 @@ export default function Editor({
 
   const handleSave = async () => {
     setBusy("save");
+    setSaveError(null);
     try {
       const blob = await runExport();
       const result = await uploadPhoto(blob, {
@@ -139,7 +141,14 @@ export default function Editor({
       if (result) {
         setSaved(true);
         onSaved?.();
+      } else {
+        // uploadPhoto swallows non-OK responses into null — surface it
+        // rather than silently reverting the button, which is exactly what
+        // made it look like saves were vanishing with nothing to show why.
+        setSaveError("Échec de l'enregistrement — le serveur n'a pas confirmé la sauvegarde. Réessaie.");
       }
+    } catch {
+      setSaveError("Échec de l'enregistrement — vérifie ta connexion et réessaie.");
     } finally {
       setBusy(null);
     }
@@ -164,6 +173,10 @@ export default function Editor({
           {busy === "save" ? "Envoi…" : saved ? "Enregistré" : "Enregistrer"}
         </button>
       </div>
+
+      {saveError && (
+        <div className="px-4 py-2 text-center text-xs text-red-300 bg-red-950/60">{saveError}</div>
+      )}
 
       <div className="relative flex-1 min-h-0 flex items-center justify-center overflow-hidden bg-black">
         <div className="relative" style={{ aspectRatio: `${previewSize.width} / ${previewSize.height}`, maxWidth: "100%", maxHeight: "100%" }}>
