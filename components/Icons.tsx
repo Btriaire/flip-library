@@ -273,6 +273,17 @@ export function GalleryGridIcon({ className = base }: IconProps) {
   );
 }
 
+export function StabilizerIcon({ className = base, ultra = false }: IconProps & { ultra?: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth="1.6">
+      {ultra && <circle cx="12" cy="12" r="9.3" strokeDasharray="2.4 2.4" />}
+      <circle cx="12" cy="12" r="6.3" />
+      <circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none" />
+      <path strokeLinecap="round" d="M12 3.8v2.2M12 18v2.2M3.8 12h2.2M18 12h2.2" />
+    </svg>
+  );
+}
+
 export function CheckIcon({ className = "w-4 h-4" }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth="2">

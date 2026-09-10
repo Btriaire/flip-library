@@ -2,10 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useCamera } from "@/lib/camera/useCamera";
+import { useStabilizer } from "@/lib/camera/useStabilizer";
 import { GLRenderer } from "@/lib/camera/gl/renderer";
 import { Adjustments, NEUTRAL_ADJUSTMENTS } from "@/lib/camera/types";
 import { PRESETS } from "@/lib/camera/presets";
-import { CameraIcon, FlashIcon, FlipCameraIcon, GalleryGridIcon } from "@/components/Icons";
+import { CameraIcon, FlashIcon, FlipCameraIcon, GalleryGridIcon, StabilizerIcon } from "@/components/Icons";
+
+// Crop-in fraction applied to the live preview when each stabilizer level
+// is on -- how much headroom the shake-compensation shift has to work
+// with. Ultra crops in further, trading field of view for a bigger
+// correction range against the same amount of hand shake.
+type StabilizerMode = "off" | "standard" | "ultra";
+const STABILIZER_ZOOM = 1.1;
+const ULTRA_STABILIZER_ZOOM = 1.25;
 
 // Live viewfinder: shows the camera feed through the same WebGL filter
 // pipeline used for the final export, so the vintage-camera look you frame
@@ -36,13 +45,27 @@ export default function Viewfinder({
     flip,
     capture,
   } = useCamera();
+  const stabilizer = useStabilizer();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const cropCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<GLRenderer | null>(null);
   const rafRef = useRef<number | null>(null);
   const [capturing, setCapturing] = useState(false);
+  const [stabilizerMode, setStabilizerMode] = useState<StabilizerMode>("off");
+  const stabModeRef = useRef<StabilizerMode>("off");
 
   const preset = PRESETS.find((p) => p.id === presetId) ?? null;
   const adjustments: Adjustments = { ...NEUTRAL_ADJUSTMENTS, ...preset?.adjustments };
+
+  useEffect(() => {
+    stabModeRef.current = stabilizerMode;
+  }, [stabilizerMode]);
+
+  const handleToggleStabilizer = (mode: "standard" | "ultra") => {
+    const next = stabilizerMode === mode ? "off" : mode;
+    setStabilizerMode(next);
+    if (next !== "off") void stabilizer.requestAccess();
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -54,15 +77,40 @@ export default function Viewfinder({
     } catch {
       return;
     }
+    if (!cropCanvasRef.current) cropCanvasRef.current = document.createElement("canvas");
 
     let seed = 0;
     const loop = () => {
       const renderer = rendererRef.current;
-      if (renderer && video && video.readyState >= 2 && video.videoWidth > 0) {
+      const crop = cropCanvasRef.current;
+      if (renderer && crop && video && video.readyState >= 2 && video.videoWidth > 0) {
         const scale = Math.min(1, 1080 / Math.max(video.videoWidth, video.videoHeight));
         const w = Math.round(video.videoWidth * scale);
         const h = Math.round(video.videoHeight * scale);
-        renderer.uploadSource(video, w, h);
+
+        const stabZoom =
+          stabModeRef.current === "ultra" ? ULTRA_STABILIZER_ZOOM : stabModeRef.current === "standard" ? STABILIZER_ZOOM : 1;
+        const ctx = stabZoom > 1 && stabilizer.availableRef.current ? crop.getContext("2d") : null;
+        if (ctx) {
+          if (crop.width !== w || crop.height !== h) {
+            crop.width = w;
+            crop.height = h;
+          }
+          // Crop to a smaller-than-source window, then slide that window
+          // opposite the phone's own drift (shakeX/Y) so the framing holds
+          // steady. The shift budget comes only from this stabilizer's own
+          // margin, not any other cropping, so it never fights other framing.
+          const cropW = video.videoWidth / stabZoom;
+          const cropH = video.videoHeight / stabZoom;
+          const marginX = (video.videoWidth - cropW) / 2;
+          const marginY = (video.videoHeight - cropH) / 2;
+          const sx = marginX * (1 - stabilizer.shakeXRef.current);
+          const sy = marginY * (1 - stabilizer.shakeYRef.current);
+          ctx.drawImage(video, sx, sy, cropW, cropH, 0, 0, w, h);
+          renderer.uploadSource(crop, w, h);
+        } else {
+          renderer.uploadSource(video, w, h);
+        }
         renderer.render(adjustments, seed);
         seed += 0.016;
       }
@@ -153,6 +201,31 @@ export default function Viewfinder({
       )}
 
       <div className="absolute bottom-0 left-0 right-0 flex flex-col gap-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+        <div className="flex gap-2 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <button
+            onClick={() => handleToggleStabilizer("standard")}
+            aria-pressed={stabilizerMode === "standard"}
+            aria-label="Stabilisateur"
+            className={`shrink-0 flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-medium ${
+              stabilizerMode === "standard" ? "border-white bg-white text-black" : "border-white/25 bg-black/30 text-white/80"
+            }`}
+          >
+            <StabilizerIcon className="w-4 h-4" />
+            Stabilisateur
+          </button>
+          <button
+            onClick={() => handleToggleStabilizer("ultra")}
+            aria-pressed={stabilizerMode === "ultra"}
+            aria-label="Ultra-stabilisateur"
+            className={`shrink-0 flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-medium ${
+              stabilizerMode === "ultra" ? "border-white bg-white text-black" : "border-white/25 bg-black/30 text-white/80"
+            }`}
+          >
+            <StabilizerIcon className="w-4 h-4" ultra />
+            Ultra-stabilisateur
+          </button>
+        </div>
+
         <div className="flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button
             onClick={() => onSelectPreset(null)}
