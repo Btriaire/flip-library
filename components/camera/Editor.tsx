@@ -116,10 +116,29 @@ export default function Editor({
     setBusy("download");
     try {
       const blob = await runExport();
+      const fileName = `photo-${Date.now()}.jpg`;
+
+      // On phones, a plain <a download> mostly lands in a Downloads/Files
+      // folder, not the actual Photos/Gallery app. Where the Web Share API
+      // can share files, use it instead -- the native share sheet it opens
+      // has a direct "Save Image"/"Enregistrer la photo" action that writes
+      // straight into Photos, which is what "save to my phone" really means
+      // here. Falls back to the old download link on desktop browsers and
+      // anywhere else that can't share files.
+      const file = new File([blob], fileName, { type: blob.type });
+      if (navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file] });
+          return;
+        } catch (e) {
+          if (e instanceof Error && e.name === "AbortError") return; // user closed the share sheet
+        }
+      }
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `photo-${Date.now()}.jpg`;
+      a.download = fileName;
       a.click();
       URL.revokeObjectURL(url);
     } finally {
@@ -281,7 +300,7 @@ export default function Editor({
             className="flex items-center gap-1.5 text-sm text-white/80 disabled:opacity-50"
           >
             <DownloadIcon className="w-4 h-4" />
-            {busy === "download" ? "Export…" : "Télécharger"}
+            {busy === "download" ? "Export…" : "Enregistrer sur le téléphone"}
           </button>
         </div>
       </div>
