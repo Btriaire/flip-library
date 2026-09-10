@@ -35,6 +35,19 @@ function imagePath(id: string, ext: string) {
   return path.join(PHOTOS_DIR, `${id}.${ext}`);
 }
 
+// Vercel sets VERCEL=1 on every deployment there (preview or prod). This
+// storage is plain files on whatever disk the process sees -- fine on the
+// VPS's persistent volume (see docker-compose.yml), but a Vercel function's
+// disk is wiped between invocations, so anything saved through a Vercel
+// deployment looks like it worked (the API call succeeds) and then is just
+// gone. Surface that up front rather than let it look like a silent bug.
+export function getStorageWarning(): string | null {
+  if (process.env.VERCEL) {
+    return "Ce déploiement Vercel n'a pas de stockage persistant : les photos enregistrées ici ne survivent pas à la requête suivante. Utilise le déploiement VPS (docker-compose.yml) pour une Bibliothèque qui garde vraiment tes photos.";
+  }
+  return null;
+}
+
 export async function listPhotos(): Promise<SavedPhotoMeta[]> {
   await ensureDir();
   const files = await fs.readdir(PHOTOS_DIR);

@@ -19,9 +19,14 @@ export default function Gallery({
   onEdit: (photo: CapturedPhoto, meta: SavedPhotoMeta) => void;
 }) {
   const [items, setItems] = useState<SavedPhotoMeta[] | null>(null);
+  const [storageWarning, setStorageWarning] = useState<string | null>(null);
   const [opening, setOpening] = useState<string | null>(null);
 
-  const refresh = () => listPhotos().then(setItems);
+  const refresh = () =>
+    listPhotos().then(({ items, storageWarning }) => {
+      setItems(items);
+      setStorageWarning(storageWarning);
+    });
   useEffect(() => {
     refresh();
   }, []);
@@ -55,6 +60,10 @@ export default function Gallery({
         </button>
         <h1 className="text-lg font-semibold">Bibliothèque</h1>
       </div>
+
+      {storageWarning && (
+        <div className="px-4 py-2 text-center text-xs text-amber-200 bg-amber-950/60">{storageWarning}</div>
+      )}
 
       {items === null ? (
         <div className="flex-1 flex items-center justify-center text-white/40">Chargement…</div>
