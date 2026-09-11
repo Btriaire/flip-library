@@ -226,6 +226,12 @@ export default function Viewfinder({
           </button>
         </div>
 
+        {stabilizerMode !== "off" && !stabilizer.available && (
+          <div className="px-4 -mt-2 text-[11px] text-amber-300/90">
+            Capteur de mouvement indisponible ou pas encore autorisé — aucun effet visible pour l&apos;instant.
+          </div>
+        )}
+
         <div className="flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button
             onClick={() => onSelectPreset(null)}

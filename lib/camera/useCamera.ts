@@ -47,9 +47,14 @@ export function useCamera() {
     canSwitch: false,
   });
   const [torchOn, setTorchOn] = useState(false);
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoomState] = useState(1);
+  const zoomTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const stop = useCallback(() => {
+    if (zoomTimer.current) {
+      clearTimeout(zoomTimer.current);
+      zoomTimer.current = null;
+    }
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     trackRef.current = null;
@@ -96,7 +101,7 @@ export function useCamera() {
         canSwitch,
       });
       setTorchOn(false);
-      setZoom(caps.zoom?.min ?? 1);
+      setZoomState(caps.zoom?.min ?? 1);
       setFacing(nextFacing);
       setReady(true);
     } catch (e) {
@@ -130,15 +135,24 @@ export function useCamera() {
     }
   }, [capabilities.torch]);
 
-  const applyZoom = useCallback(async (value: number) => {
-    const track = trackRef.current;
-    if (!track || !capabilities.zoom) return;
-    try {
-      await track.applyConstraints({ advanced: [{ zoom: value } as MediaTrackConstraintSet] });
-      setZoom(value);
-    } catch {
-      // Ignore — zoom is a nice-to-have, not worth surfacing an error for.
-    }
+  // A <input type="range"> fires onChange on every pixel of drag, which
+  // used to call applyConstraints() on the live hardware track just as
+  // often. Real camera drivers (notably on Android) don't take well to a
+  // flood of overlapping zoom constraint changes -- it could stall the
+  // capture pipeline badly enough to crash the tab. Update the displayed
+  // value immediately for a responsive slider, but only push the actual
+  // hardware constraint once dragging pauses.
+  const applyZoom = useCallback((value: number) => {
+    setZoomState(value);
+    if (!capabilities.zoom) return;
+    if (zoomTimer.current) clearTimeout(zoomTimer.current);
+    zoomTimer.current = setTimeout(() => {
+      const track = trackRef.current;
+      if (!track) return;
+      track.applyConstraints({ advanced: [{ zoom: value } as MediaTrackConstraintSet] }).catch(() => {
+        // Ignore -- zoom is a nice-to-have, not worth surfacing an error for.
+      });
+    }, 80);
   }, [capabilities.zoom]);
 
   // Takes the highest-resolution still the platform will give us: prefer
