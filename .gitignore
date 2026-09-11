@@ -13,10 +13,6 @@
 # testing
 /coverage
 
-# Flip Cam local photo storage (dev default — see .env.example PHOTOS_DIR)
-/.data/
-/data/
-
 # next.js
 /.next/
 /out/

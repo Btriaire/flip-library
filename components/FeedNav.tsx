@@ -33,15 +33,13 @@ export default function FeedNav({
         <h1 className="text-[26px] font-bold leading-none tracking-tight [font-family:Georgia,serif]">
           Flip-PaLaMa
         </h1>
-        <div className="flex items-center gap-2">
-          <Link
-            href="/settings"
-            aria-label="Réglages"
-            className="rounded-full bg-white/10 p-2 text-white/80 active:bg-white/20"
-          >
-            <SettingsIcon />
-          </Link>
-        </div>
+        <Link
+          href="/settings"
+          aria-label="Réglages"
+          className="rounded-full bg-white/10 p-2 text-white/80 active:bg-white/20"
+        >
+          <SettingsIcon />
+        </Link>
       </div>
 
       <nav
