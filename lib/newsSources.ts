@@ -1,6 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 import { ArticleItem } from "./types";
-import { stripHtml } from "./rssUtils";
+import { attrUrl, FeedNode, linkHref, stripHtml } from "./rssUtils";
 import { Category, categoryForTag } from "./categories";
 
 const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_" });
@@ -81,17 +81,11 @@ export const NEWS_SOURCES: NewsSource[] = [
   { id: "nextink", name: "Next", feed: "https://www.next.ink/feed/" },
 ];
 
-function attrUrl(node: any): string | null {
-  if (!node) return null;
-  const first = Array.isArray(node) ? node[0] : node;
-  return first?.["@_url"] || null;
-}
-
 function firstImgSrc(html: string): string | null {
   return html.match(/<img[^>]+src=["']([^"']+)["']/i)?.[1] ?? null;
 }
 
-function imageFor(item: any, body: string): string | null {
+function imageFor(item: FeedNode, body: string): string | null {
   return (
     attrUrl(item.enclosure) ||
     attrUrl(item["media:content"]) ||
@@ -108,7 +102,7 @@ function imageFor(item: any, body: string): string | null {
 // on ArticleItem).
 const EXCERPT_MAX = 1400;
 
-function excerptFor(item: any, body: string): string {
+function excerptFor(item: FeedNode, body: string): string {
   const long = body ? stripHtml(body) : "";
   const short = stripHtml(item.description || "");
   const text = long.length > short.length ? long : short;
@@ -124,7 +118,7 @@ function normalize(text: string): string {
     .replace(/[̀-ͯ]/g, "");
 }
 
-function matchesTag(item: any, tag: string): boolean {
+function matchesTag(item: FeedNode, tag: string): boolean {
   // Outlets that syndicate the body leave <description> nearly empty, so the
   // haystack has to include content:encoded or they never match at all.
   const haystack = normalize(
@@ -137,13 +131,13 @@ function matchesTag(item: any, tag: string): boolean {
 function parseFeed(xml: string, source: NewsSource, tag: string, filterTag?: string): ArticleItem[] {
   const data = parser.parse(xml);
   const raw = data?.rss?.channel?.item ?? data?.feed?.entry;
-  let list: any[] = Array.isArray(raw) ? raw : raw ? [raw] : [];
+  let list: FeedNode[] = Array.isArray(raw) ? raw : raw ? [raw] : [];
 
   if (filterTag) list = list.filter((item) => matchesTag(item, filterTag));
 
   return list.slice(0, 6).map((item, i) => {
     const body: string = item["content:encoded"] || "";
-    const link: string = typeof item.link === "string" ? item.link : item.link?.["@_href"] || "";
+    const link = linkHref(item.link);
     return {
       id: `${source.id}-${tag}-${i}-${encodeURIComponent(link || item.title || "")}`,
       kind: "article",
