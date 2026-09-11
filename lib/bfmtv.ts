@@ -1,6 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 import { ArticleItem } from "./types";
-import { stripHtml } from "./rssUtils";
+import { attrUrl, FeedNode, linkHref, stripHtml } from "./rssUtils";
 
 const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_" });
 
@@ -40,20 +40,20 @@ function parseFeed(xml: string, tag: string, filterKeyword?: string): ArticleIte
 
   if (filterKeyword) {
     const kw = filterKeyword.toLowerCase();
-    list = list.filter((item: any) => {
+    list = list.filter((item: FeedNode) => {
       const haystack = `${item.title || ""} ${item.description || ""}`.toLowerCase();
       return haystack.includes(kw);
     });
   }
 
-  return list.slice(0, 10).map((item: any, i: number) => {
-    const link: string = item.link || "";
+  return list.slice(0, 10).map((item: FeedNode, i: number) => {
+    const link = linkHref(item.link);
     return {
       id: `bfmtv-${tag}-${i}-${encodeURIComponent(link)}`,
       kind: "article",
       title: stripHtml(item.title || ""),
       excerpt: stripHtml(item.description || ""),
-      image: item.enclosure?.["@_url"] || null,
+      image: attrUrl(item.enclosure),
       source: "BFMTV",
       url: link,
       publishedAt: item.pubDate || null,

@@ -1,5 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 import { ArticleItem } from "./types";
+import { FeedNode, linkHref } from "./rssUtils";
 
 const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_" });
 
@@ -16,12 +17,6 @@ function stripFigures(html: string): string {
   return html.replace(/<figure[\s\S]*?<\/figure>/g, "");
 }
 
-function getEntryLink(entry: any): string {
-  const links = Array.isArray(entry.link) ? entry.link : [entry.link];
-  const alt = links.find((l: any) => l?.["@_rel"] === "alternate") || links[0];
-  return alt?.["@_href"] || "";
-}
-
 export async function searchTheConversation(tag: string): Promise<ArticleItem[]> {
   const res = await fetch("https://theconversation.com/fr/articles.atom", {
     headers: { "User-Agent": "Mozilla/5.0" },
@@ -32,16 +27,19 @@ export async function searchTheConversation(tag: string): Promise<ArticleItem[]>
   const entries = data?.feed?.entry;
   const list = Array.isArray(entries) ? entries : entries ? [entries] : [];
 
+  const contentText = (entry: FeedNode): string =>
+    (typeof entry.content === "string" ? entry.content : entry.content?.["#text"]) || "";
+
   const kw = tag.trim().toLowerCase();
-  const matched = list.filter((entry: any) => {
-    const haystack = `${entry.title || ""} ${entry.content?.["#text"] || entry.content || ""}`.toLowerCase();
+  const matched = list.filter((entry: FeedNode) => {
+    const haystack = `${entry.title || ""} ${contentText(entry)}`.toLowerCase();
     return haystack.includes(kw);
   });
 
-  return matched.slice(0, 5).map((entry: any, i: number) => {
-    const rawContent: string = entry.content?.["#text"] || entry.content || "";
+  return matched.slice(0, 5).map((entry: FeedNode, i: number) => {
+    const rawContent = contentText(entry);
     const author = entry.author?.name || null;
-    const url = getEntryLink(entry);
+    const url = linkHref(entry.link);
     return {
       id: `tc-${tag}-${i}-${encodeURIComponent(url)}`,
       kind: "article",

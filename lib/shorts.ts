@@ -9,7 +9,7 @@ function shuffle<T>(arr: T[]): T[] {
   return copy;
 }
 
-async function fetchJson(url: string): Promise<{ items: any[] }> {
+async function fetchJson(url: string): Promise<{ items: FeedItem[] }> {
   try {
     const res = await fetch(url, { signal: AbortSignal.timeout(12000) });
     if (!res.ok) return { items: [] };
