@@ -1,4 +1,5 @@
 import { XMLParser } from "fast-xml-parser";
+import DOMPurify from "isomorphic-dompurify";
 import { ArticleItem } from "./types";
 import { FeedNode, linkHref } from "./rssUtils";
 
@@ -13,8 +14,16 @@ const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_
 // republish ones we don't have separate rights to (they explicitly permit
 // removing images). There's no keyword search on their feed, so we filter
 // their recent-articles feed by tag match.
-function stripFigures(html: string): string {
-  return html.replace(/<figure[\s\S]*?<\/figure>/g, "");
+//
+// This is the only source in this app whose HTML gets rendered via
+// dangerouslySetInnerHTML (ArticleReader.tsx) instead of shown as plain
+// text — every other source's excerpt goes through stripHtml() first. That
+// makes this the one place a compromised or MITM'd feed response could
+// inject a script, so the body is sanitized here, at the point it's read
+// from the network, rather than trusting the render site to remember to.
+function sanitizeArticleHtml(html: string): string {
+  const withoutFigures = html.replace(/<figure[\s\S]*?<\/figure>/g, "");
+  return DOMPurify.sanitize(withoutFigures);
 }
 
 export async function searchTheConversation(tag: string): Promise<ArticleItem[]> {
@@ -50,7 +59,7 @@ export async function searchTheConversation(tag: string): Promise<ArticleItem[]>
       url,
       publishedAt: entry.published || null,
       tag,
-      fullText: stripFigures(rawContent),
+      fullText: sanitizeArticleHtml(rawContent),
       fullTextIsHtml: true,
       byline: author ? `${author}, The Conversation` : "The Conversation",
       license: "CC BY-ND",
