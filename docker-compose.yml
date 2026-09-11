@@ -9,9 +9,4 @@ services:
       - "127.0.0.1:${HOST_PORT:-3500}:3000"
     env_file:
       - .env.local
-    environment:
-      - PHOTOS_DIR=/data/photos
-    volumes:
-      # Persists Flip Cam's saved shots across rebuilds — see lib/camera/photoStore.server.ts.
-      - ./data/photos:/data/photos
     restart: unless-stopped
