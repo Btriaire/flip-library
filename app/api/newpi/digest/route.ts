@@ -3,7 +3,7 @@ const JARVIS_API = process.env.JARVIS_API_URL || "http://46.202.131.240:9999";
 
 export async function GET() {
   try {
-    const res = await fetch(`${JARVIS_API}/api/newpi/digest`, { cache: "no-store" });
+    const res = await fetch(`${JARVIS_API}/api/newpi/digest`, { cache: "no-store", headers: { "x-jarvis-token": process.env.JARVIS_TOKEN || "" } });
     const data = await res.json();
     return Response.json(data);
   } catch (error) {

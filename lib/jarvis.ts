@@ -5,7 +5,7 @@ const JARVIS_API = process.env.JARVIS_API_URL || "http://46.202.131.240:9999";
 async function askJarvis(question: string, timeoutMs = 15000): Promise<string> {
   const res = await fetch(`${JARVIS_API}/api/ask`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "x-jarvis-token": process.env.JARVIS_TOKEN || "" },
     body: JSON.stringify({ question, project: "flip-library" }),
     signal: AbortSignal.timeout(timeoutMs),
   });
