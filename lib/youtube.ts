@@ -1,5 +1,16 @@
 import { VideoItem } from "./types";
 
+// The YouTube Data API v3 search.list response has many more fields per
+// item; these are the only ones this app reads.
+type YouTubeSearchItem = {
+  id: { videoId: string };
+  snippet: {
+    title: string;
+    channelTitle: string;
+    thumbnails?: { medium?: { url: string } };
+  };
+};
+
 // YouTube returns titles HTML-escaped ("Aya Nakamura &amp; …"), and this runs
 // server-side where there's no DOM to decode with.
 function decodeEntities(text: string): string {
@@ -37,7 +48,7 @@ export async function searchYouTubeShorts(tag: string): Promise<VideoItem[]> {
   if (!res.ok) throw new Error(`YouTube ${res.status}`);
   const data = await res.json();
 
-  return (data.items || []).map((item: any) => {
+  return (data.items || []).map((item: YouTubeSearchItem) => {
     const videoId = item.id.videoId;
     return {
       id: `yt-${videoId}`,

@@ -1,6 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 import { ArticleItem } from "./types";
-import { stripHtml } from "./rssUtils";
+import { FeedNode, linkHref, stripHtml } from "./rssUtils";
 
 const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_" });
 
@@ -19,13 +19,13 @@ export async function searchBasta(tag: string): Promise<ArticleItem[]> {
   const list = Array.isArray(items) ? items : items ? [items] : [];
 
   const kw = tag.trim().toLowerCase();
-  const matched = list.filter((item: any) => {
+  const matched = list.filter((item: FeedNode) => {
     const haystack = `${item.title || ""} ${item.description || ""}`.toLowerCase();
     return haystack.includes(kw);
   });
 
-  return matched.slice(0, 10).map((item: any, i: number) => {
-    const link: string = item.link || "";
+  return matched.slice(0, 10).map((item: FeedNode, i: number) => {
+    const link = linkHref(item.link);
     return {
       id: `basta-${tag}-${i}-${encodeURIComponent(link)}`,
       kind: "article",

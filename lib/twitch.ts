@@ -1,5 +1,14 @@
 import { VideoItem } from "./types";
 
+// Helix's actual clip payload has many more fields; these are the only ones
+// this app reads.
+type TwitchClip = {
+  id: string;
+  title: string;
+  thumbnail_url: string;
+  broadcaster_name: string;
+};
+
 // Twitch Helix API — needs TWITCH_CLIENT_ID + TWITCH_CLIENT_SECRET.
 // App-access token is cached in memory between calls (serverless: best-effort,
 // re-fetched on cold start).
@@ -49,7 +58,7 @@ export async function searchTwitchClips(tag: string): Promise<VideoItem[]> {
   const clipsData = await clipsRes.json();
 
   const parentDomain = process.env.NEXT_PUBLIC_SITE_HOST || "localhost";
-  return (clipsData.data || []).map((clip: any) => ({
+  return (clipsData.data || []).map((clip: TwitchClip) => ({
     id: `tw-${clip.id}`,
     kind: "video",
     title: clip.title,

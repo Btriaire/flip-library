@@ -1,6 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 import { ArticleItem } from "./types";
-import { stripHtml } from "./rssUtils";
+import { FeedNode, linkHref, stripHtml } from "./rssUtils";
 
 const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_" });
 
@@ -33,10 +33,10 @@ export async function searchArticles(tag: string, market = "fr-FR"): Promise<Art
   const items = data?.rss?.channel?.item;
   const list = Array.isArray(items) ? items : items ? [items] : [];
 
-  return list.slice(0, 20).map((item: any, i: number) => {
+  return list.slice(0, 20).map((item: FeedNode, i: number) => {
     const rawTitle: string = item.title || "";
     const sourceName: string = stripHtml(item["News:Source"] || "Bing News");
-    const link = unwrapBingLink(item.link || "");
+    const link = unwrapBingLink(linkHref(item.link));
     return {
       id: `bing-${tag}-${i}-${encodeURIComponent(link || rawTitle)}`,
       kind: "article",

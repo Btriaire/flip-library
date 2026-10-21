@@ -13,6 +13,25 @@ export default function CardDeck({ items, loading }: { items: FeedItem[]; loadin
   const [index, setIndex] = useState(0);
   const [, forceUpdate] = useState(0);
 
+  // `items` is a whole new feed every time the active tab changes (see
+  // app/page.tsx) — this component isn't remounted on that change, so
+  // without a reset, `index` carries over from the previous feed. Swipe deep
+  // into a 20-item feed, switch to a 3-item one, and `items[index]` below
+  // would be undefined -- reading `.kind` off it crashes the page.
+  //
+  // setIndex(0) alone doesn't fix that: it schedules a future render, it
+  // doesn't change what `index` resolves to in *this* call, and `current`
+  // below is computed later in this same call -- so a fresh setIndex(0)
+  // still crashes on the same stale value before React ever gets to render
+  // the corrected state. `isNewItems` makes this render use 0 immediately,
+  // not just the next one.
+  const [prevItems, setPrevItems] = useState(items);
+  const isNewItems = items !== prevItems;
+  if (isNewItems) {
+    setPrevItems(items);
+    setIndex(0);
+  }
+
   const advance = (dir: 1 | -1) => {
     setIndex((i) => {
       const next = i + dir;
@@ -49,7 +68,7 @@ export default function CardDeck({ items, loading }: { items: FeedItem[]; loadin
     );
   }
 
-  const current = items[index];
+  const current = items[isNewItems ? 0 : index];
 
   return (
     <div className="absolute inset-0 overflow-hidden overscroll-none touch-none">
